@@ -1,0 +1,150 @@
+<% layout('headers/boilers') -%>
+    <link rel="stylesheet" href="/css/star.css">
+    <script>
+        const mapToken = '<%-process.env.mapBox%>'
+        const farm = <%-JSON.stringify(data)-%>
+    </script>
+
+    <div class="mt-5">
+        <div class="row">
+            <div class="col-6">
+                
+                <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        <% data.img.forEach((img, i)=> { %>
+                            <div class="carousel-item <%= i === 0 ? 'active' : ''%>">
+                                <img src="<%= img.url %>" class="d-block w-100" alt="" crossorigin="anonymous">
+                            </div>
+                            <% }) %>
+                    </div>
+                    <% if(data.img.length> 1){ %>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                        <% } %>
+                </div>
+
+
+                <div class="card mb-3">
+
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <%= data.name %>
+                        </h5>
+                        <p class="card-text">
+                            <%= data.description %>
+                        </p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item text-muted"></li>
+                        <li class="list-group-item">$<%= data.price %> owned by <%= data.author.username %>
+                        </li>
+                    </ul>
+                    <div class="card-body">
+                        <% if(currentUser && data.author.equals(currentUser._id)){ %>
+                            <form class="d-inline" action="/post/data/<%=data._id%>?_method=DELETE" method="POST"
+                                style="display:inline;">
+                                <button class="btn btn-danger">Delete</button>
+                            </form>
+                            <form action="/post/edit/<%= data._id %>" method="get" style="display:inline"><button
+                                    class="btn btn-warning">Edit <%= data.name %></button></form>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div id='map' style='width: 400px; height: 300px;' class="mb-3"></div>
+                <% if(currentUser){ %>
+                    <h2>Leave review</h2>
+                    <form action="/camp/<%= data._id %>/review" method="post" class="needs-validation">
+                        <div class="mb-3">
+                            <small class="smb"></small>
+                            <label class="form-label" for="rating">Rating</label>
+                            <fieldset class="starability-basic">
+                                <legend></legend>
+                                <input type="radio" id="no-rate" class="input-no-rate" name="rating" value="1" checked
+                                    aria-label="No rating." />
+                                <input type="radio" id="first-rate1" name="rating" value="1" />
+                                <label for="first-rate1" title="Terrible">1 star</label>
+                                <input type="radio" id="first-rate2" name="rating" value="2" />
+                                <label for="first-rate2" title="Not good">2 stars</label>
+                                <input type="radio" id="first-rate3" name="rating" value="3" />
+                                <label for="first-rate3" title="Average">3 stars</label>
+                                <input type="radio" id="first-rate4" name="rating" value="4" />
+                                <label for="first-rate4" title="Very good">4 stars</label>
+                                <input type="radio" id="first-rate5" name="rating" value="5" />
+                                <label for="first-rate5" title="Amazing">5 stars</label>
+                            </fieldset>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="body">Review</label>
+                            <textarea class="form-control" name="body" id="body" cols="10" rows="10"
+                                style="text-align:justify" required></textarea>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                        <button class="btn btn-success">Submit</button>
+                    </form>
+                    <% } %>
+                        <% for(let x=0; x < data.reviews.length; x++){ %>
+                            <div class="card mb-3 mt-5">
+                                <div class="card-body">
+                                    <span class="card-title">Rating:
+                                        <h3>
+                                            <%= data.reviews[x].rating %>
+                                        </h3>
+                                        <p class="starability-result" data-rating="<%= data.reviews[x].rating %>">
+                                        </p>
+                                    </span>
+                                    <h6>
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            <%= data.reviews[x].author.username %>
+                                        </h6>
+                                    </h6>
+                                    <p class="card-text">Review: <%= data.reviews[x].body %>
+                                    </p>
+                                    <% if((currentUser && data.reviews[x].author.equals(currentUser._id)) || currentUser
+                                        && data.author.equals(currentUser._id)){ %>
+                                        <form
+                                            action="/delete/<%= data._id %>/review/<%= data.reviews[x]._id %>?_method=DELETE"
+                                            method="post" style="display:inline">
+                                            <button class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+                                        <% } %>
+                                </div>
+                            </div>
+                            <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+
+    <script src="/js/MapApi.js"></script>
