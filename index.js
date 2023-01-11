@@ -55,7 +55,7 @@ app.use(
     name:'Holiday Planner',
     store:MongoStore.create(
       {
-        mongoUrl:'mongodb://localhost:27017/Project',
+        mongoUrl:process.env.dburl,
       }
       ),
     cookie: {
