@@ -31,7 +31,7 @@ const MongoStore = require('connect-mongo')
 
 
 mongoose
-  .connect("mongodb://localhost:27017/Project")
+  .connect(process.env.dburl)
   .then(function () {
     console.log("Connected");
   })
