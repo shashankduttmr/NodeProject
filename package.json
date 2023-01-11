@@ -47,5 +47,8 @@
   },
   "directories": {
     "test": "test"
+  },
+  "devDependencies": {
+    "@vercel/node": "^2.8.5"
   }
 }
